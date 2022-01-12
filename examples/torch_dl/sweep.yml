@@ -1,0 +1,21 @@
+program: torch_sweep.py
+method: bayes
+metric:
+  goal: maximize
+  name: "valid_accuracy"
+parameters:
+  num_hidden1:
+    values: [10, 12, 14, 16, 18, 20]
+  num_hidden2:
+    values: [10, 12, 14, 16, 18, 20]
+  learning_rate:
+    values: [0.001, 0.005, 0.0005]
+  batch_size:
+    values: [16, 32, 64]
+  num_epochs:
+    values: [2, 4, 8]
+early_terminate:
+  type: hyperband
+  s: 2
+  eta: 3
+  max_iter: 27
