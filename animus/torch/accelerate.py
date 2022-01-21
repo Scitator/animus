@@ -30,7 +30,7 @@ class IAccelerator(Accelerator):
     def cleanup():
         pass
 
-    def average_ddp_metrics(self, metrics: Dict):
+    def aggregate_ddp_metrics(self, metrics: Dict):
         pass
 
 
@@ -85,7 +85,7 @@ class TorchDDP(IAccelerator):
         reduced = self._sum_reduce(tensor) / self.state.num_processes
         return reduced
 
-    def average_ddp_metrics(self, metrics: Dict):
+    def aggregate_ddp_metrics(self, metrics: Dict):
         metrics = {
             k: self._mean_reduce(torch.tensor(v, device=self.device))
             for k, v in metrics.items()
@@ -99,7 +99,7 @@ class TorchXLA(IAccelerator):
         world_size: int = 8
         xmp.spawn(fn, args=(world_size,), nprocs=world_size, start_method="fork")
 
-    def average_ddp_metrics(self, metrics: Dict):
+    def aggregate_ddp_metrics(self, metrics: Dict):
         metrics = {
             k: xm.mesh_reduce(k, v.item() if isinstance(v, torch.Tensor) else v, np.mean)
             for k, v in metrics.items()
