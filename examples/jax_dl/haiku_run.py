@@ -204,4 +204,4 @@ class Experiment(IExperiment):
 
 
 if __name__ == "__main__":
-    Experiment(num_epochs=50).run()
+    Experiment(num_epochs=15).run()

@@ -232,8 +232,8 @@ class DiscreteSamplerCallback(ICallback):
         exp.epoch_metrics[self.prefix]["epsilon"] = self.epsilon
         exp.epoch_metrics[self.prefix]["num_sessions"] = self.session_counter
         exp.epoch_metrics[self.prefix]["num_samples"] = self.session_steps
-        exp.epoch_metrics[self.prefix]["updates_per_sample"] = (
-            exp.dataset_sample_step / self.session_steps
+        exp.epoch_metrics[self.prefix]["updates_per_batch"] = (
+            exp.dataset_batch_step / self.session_steps
         )
         exp.epoch_metrics[self.prefix]["valid_reward"] = valid_rewards
         exp.epoch_metrics[self.prefix]["valid_steps"] = valid_steps
@@ -331,9 +331,9 @@ class Experiment(IExperiment):
         super().on_dataset_start(exp)
         self.dataset_metrics["loss"] = list()
 
-    def handle_batch(self, batch: Sequence[np.array]) -> None:
+    def run_batch(self) -> None:
         # model train/valid step
-        states, actions, rewards, dones, next_states = batch
+        states, actions, rewards, dones, next_states = self.batch
 
         # get q-values for all actions in current states
         state_qvalues = self.network(states)
@@ -401,13 +401,27 @@ if __name__ == "__main__":
     ).run()
 
     # evaluate
-    env = gym.wrappers.Monitor(gym.make(env_name), directory="videos_dqn", force=True)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    state_dict = torch.load(
-        f"{LOGDIR}/network.best.pth", map_location=lambda storage, loc: storage
-    )
-    network = get_network(env)
-    network.load_state_dict(state_dict)
-    rewards, _ = generate_sessions(env=env, network=network.eval(), num_sessions=100)
-    env.close()
-    print("mean reward:", np.mean(rewards))
+    try:
+        env = gym.wrappers.Monitor(
+            gym.make(env_name), directory="videos_dqn", force=True
+        )
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_dict = torch.load(
+            f"{LOGDIR}/network.best.pth", map_location=lambda storage, loc: storage
+        )
+        network = get_network(env)
+        network.load_state_dict(state_dict)
+        rewards, _ = generate_sessions(env=env, network=network.eval(), num_sessions=100)
+        env.close()
+        print("mean reward:", np.mean(rewards))
+    except:
+        env = gym.make(env_name)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_dict = torch.load(
+            f"{LOGDIR}/network.best.pth", map_location=lambda storage, loc: storage
+        )
+        network = get_network(env)
+        network.load_state_dict(state_dict)
+        rewards, _ = generate_sessions(env=env, network=network.eval(), num_sessions=100)
+        env.close()
+        print("mean reward:", np.mean(rewards))

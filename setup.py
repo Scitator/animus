@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 NAME = "animus"
 DESCRIPTION = "Animus is a minimalistic framework to run machine learning experiments."
@@ -14,7 +14,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name=NAME,
-    version="0.0.1",
+    version="0.0.2",
     url=URL,
     download_url=URL,
     description=DESCRIPTION,
@@ -24,7 +24,12 @@ setup(
     long_description=open(os.path.join(here, "README.md")).read(),
     long_description_content_type="text/markdown",
     python_requires=REQUIRES_PYTHON,
-    packages=find_packages(exclude=("tests", "examples",)),
+    packages=find_packages(
+        exclude=(
+            "tests",
+            "examples",
+        )
+    ),
     install_requires=[],
     include_package_data=True,
     keywords=[

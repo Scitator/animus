@@ -161,10 +161,21 @@ if __name__ == "__main__":
     ).run()
 
     # evaluate
-    env = gym.wrappers.Monitor(gym.make(env_name), directory="videos_cem", force=True)
-    with open(f"{LOGDIR}/agent.best.pkl", "rb") as fin:
-        agent = pickle.load(fin)
-    sessions = [generate_session(env=env, agent=agent) for _ in range(100)]
-    env.close()
-    _, _, rewards = map(np.array, zip(*sessions))
-    print("mean reward:", np.mean(rewards))
+    try:
+        env = gym.wrappers.Monitor(
+            gym.make(env_name), directory="videos_cem", force=True
+        )
+        with open(f"{LOGDIR}/agent.best.pkl", "rb") as fin:
+            agent = pickle.load(fin)
+        sessions = [generate_session(env=env, agent=agent) for _ in range(100)]
+        env.close()
+        _, _, rewards = map(np.array, zip(*sessions))
+        print("mean reward:", np.mean(rewards))
+    except:
+        env = gym.make(env_name)
+        with open(f"{LOGDIR}/agent.best.pkl", "rb") as fin:
+            agent = pickle.load(fin)
+        sessions = [generate_session(env=env, agent=agent) for _ in range(100)]
+        env.close()
+        _, _, rewards = map(np.array, zip(*sessions))
+        print("mean reward:", np.mean(rewards))

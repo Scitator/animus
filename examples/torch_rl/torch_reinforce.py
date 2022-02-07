@@ -270,12 +270,12 @@ class Experiment(IExperiment):
         super().on_dataset_start(exp)
         self.dataset_metrics["loss"] = list()
 
-    def handle_batch(self, batch: Sequence[np.array]):
+    def run_batch(self):
         # model train/valid step
         # ATTENTION:
         #   because of different trajectories lens
         #   ONLY batch_size==1 supported
-        states, actions, rewards = batch
+        states, actions, rewards = self.batch
         states, actions, rewards = states[0], actions[0], rewards[0]
         cumulative_returns = torch.tensor(get_cumulative_rewards(rewards, gamma))
 
@@ -320,15 +320,27 @@ if __name__ == "__main__":
         env_name=env_name,
     ).run()
 
-    env = gym.wrappers.Monitor(
-        gym.make(env_name), directory="videos_reinforce", force=True
-    )
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    state_dict = torch.load(
-        f"{LOGDIR}/model.best.pth", map_location=lambda storage, loc: storage
-    )
-    actor = get_network(env)
-    actor.load_state_dict(state_dict)
-    rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
-    env.close()
-    print("mean reward:", np.mean(rewards))
+    try:
+        env = gym.wrappers.Monitor(
+            gym.make(env_name), directory="videos_reinforce", force=True
+        )
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_dict = torch.load(
+            f"{LOGDIR}/model.best.pth", map_location=lambda storage, loc: storage
+        )
+        actor = get_network(env)
+        actor.load_state_dict(state_dict)
+        rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
+        env.close()
+        print("mean reward:", np.mean(rewards))
+    except:
+        env = gym.make(env_name)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_dict = torch.load(
+            f"{LOGDIR}/model.best.pth", map_location=lambda storage, loc: storage
+        )
+        actor = get_network(env)
+        actor.load_state_dict(state_dict)
+        rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
+        env.close()
+        print("mean reward:", np.mean(rewards))

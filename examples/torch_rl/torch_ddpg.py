@@ -253,8 +253,8 @@ class ContinuousSamplerCallback(ICallback):
         exp.epoch_metrics[self.prefix]["sigma"] = self.sigma
         exp.epoch_metrics[self.prefix]["num_sessions"] = self.session_counter
         exp.epoch_metrics[self.prefix]["num_samples"] = self.session_steps
-        exp.epoch_metrics[self.prefix]["updates_per_sample"] = (
-            exp.dataset_sample_step / self.session_steps
+        exp.epoch_metrics[self.prefix]["updates_per_batch"] = (
+            exp.dataset_batch_step / self.session_steps
         )
         exp.epoch_metrics[self.prefix]["valid_reward"] = valid_rewards
         exp.epoch_metrics[self.prefix]["valid_steps"] = valid_steps
@@ -273,7 +273,7 @@ class Experiment(IExperiment):
         sigma: float = 0.3,
         # general
         num_epochs: int,
-        env_name: str = "Pendulum-v0",
+        env_name: str = "Pendulum-v1",
     ):
         super().__init__()
         self.num_epochs = num_epochs
@@ -361,9 +361,9 @@ class Experiment(IExperiment):
         self.dataset_metrics["critic_loss"] = list()
         self.dataset_metrics["actor_loss"] = list()
 
-    def handle_batch(self, batch: Any) -> None:
+    def run_batch(self) -> None:
         # model train/valid step
-        states, actions, rewards, dones, next_states = batch
+        states, actions, rewards, dones, next_states = self.batch
 
         # get actions for the current state
         pred_actions = self.actor(states)
@@ -429,7 +429,7 @@ if __name__ == "__main__":
     session_period = 1
     sigma = 0.3
     # extras
-    env_name = "Pendulum-v0"
+    env_name = "Pendulum-v1"
 
     # train
     exp = Experiment(
@@ -443,15 +443,27 @@ if __name__ == "__main__":
     ).run()
 
     # evaluate
-    env = gym.wrappers.Monitor(
-        NormalizedActions(gym.make(env_name)), directory="videos_ddpg", force=True
-    )
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    state_dict = torch.load(
-        f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
-    )
-    actor = get_network_actor(env)
-    actor.load_state_dict(state_dict)
-    rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
-    env.close()
-    print("mean reward:", np.mean(rewards))
+    try:
+        env = gym.wrappers.Monitor(
+            NormalizedActions(gym.make(env_name)), directory="videos_ddpg", force=True
+        )
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_dict = torch.load(
+            f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
+        )
+        actor = get_network_actor(env)
+        actor.load_state_dict(state_dict)
+        rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
+        env.close()
+        print("mean reward:", np.mean(rewards))
+    except:
+        env = NormalizedActions(gym.make(env_name))
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        state_dict = torch.load(
+            f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
+        )
+        actor = get_network_actor(env)
+        actor.load_state_dict(state_dict)
+        rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
+        env.close()
+        print("mean reward:", np.mean(rewards))

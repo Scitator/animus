@@ -26,19 +26,19 @@ class TorchCheckpointerCallback(ICheckpointerCallback):
         return logpath
 
 
-class AccelerateCheckpointerCallback(ICheckpointerCallback):
+class EngineCheckpointerCallback(ICheckpointerCallback):
     def on_experiment_start(self, exp: "IExperiment") -> None:
-        assert isinstance(getattr(exp, "accelerator", None), Accelerator)
+        assert isinstance(getattr(exp, "engine", None), Accelerator)
 
     def save(self, exp: IExperiment, obj: Any, logprefix: str) -> str:
         logpath = f"{logprefix}.pth"
         if isinstance(obj, nn.Module):
-            exp.accelerator.wait_for_everyone()
-            obj = exp.accelerator.unwrap_model(obj)
-            exp.accelerator.save(obj.state_dict(), logpath)
+            exp.engine.wait_for_everyone()
+            obj = exp.engine.unwrap_model(obj)
+            exp.engine.save(obj.state_dict(), logpath)
         else:
-            exp.accelerator.save(obj, logpath)
+            exp.engine.save(obj, logpath)
         return logpath
 
 
-__all__ = [TorchCheckpointerCallback, AccelerateCheckpointerCallback]
+__all__ = [TorchCheckpointerCallback, EngineCheckpointerCallback]
