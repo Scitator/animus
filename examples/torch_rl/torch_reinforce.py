@@ -100,7 +100,7 @@ def generate_session(
     states, actions, rewards = [], [], []
     state = env.reset()
 
-    for t in range(t_max):
+    for _ in range(t_max):
         action = get_action(env, network, state=state)
         next_state, reward, done, _ = env.step(action)
 
@@ -116,7 +116,7 @@ def generate_session(
     if rollout_buffer is not None:
         rollout_buffer.append(Rollout(states, actions, rewards))
 
-    return total_reward, t
+    return total_reward, len(states)
 
 
 def generate_sessions(
@@ -127,7 +127,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for i_episone in range(num_sessions):
+    for _ in range(int(num_sessions)):
         r, t = generate_session(
             env=env, network=network, t_max=t_max, rollout_buffer=rollout_buffer
         )
@@ -157,8 +157,8 @@ class SoftmaxSamplerCallback(ICallback):
         actor_attr: str,
         env,
         rollout_buffer: RolloutBuffer,
-        num_train_sessions: int = int(1e2),
-        num_valid_sessions: int = int(1e2),
+        num_train_sessions: int = 1e2,
+        num_valid_sessions: int = 1e2,
         prefix: str = "sampler",
     ):
         super().__init__()
@@ -261,7 +261,7 @@ class Experiment(IExperiment):
 
     def on_experiment_start(self, exp: "IExperiment"):
         super().on_experiment_start(exp)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")
         self._setup_data()
         self._setup_model()
         self._setup_callbacks()
@@ -270,12 +270,12 @@ class Experiment(IExperiment):
         super().on_dataset_start(exp)
         self.dataset_metrics["loss"] = list()
 
-    def handle_batch(self, batch: Sequence[np.array]):
+    def run_batch(self):
         # model train/valid step
         # ATTENTION:
         #   because of different trajectories lens
         #   ONLY batch_size==1 supported
-        states, actions, rewards = batch
+        states, actions, rewards = self.batch
         states, actions, rewards = states[0], actions[0], rewards[0]
         cumulative_returns = torch.tensor(get_cumulative_rewards(rewards, gamma))
 
@@ -320,10 +320,14 @@ if __name__ == "__main__":
         env_name=env_name,
     ).run()
 
-    env = gym.wrappers.Monitor(
-        gym.make(env_name), directory="videos_reinforce", force=True
-    )
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    try:
+        env = gym.wrappers.Monitor(
+            gym.make(env_name), directory="videos_reinforce", force=True
+        )
+        env.reset()
+    except Exception:
+        env = gym.make(env_name)
+    device = torch.device("cpu")
     state_dict = torch.load(
         f"{LOGDIR}/model.best.pth", map_location=lambda storage, loc: storage
     )
@@ -331,4 +335,4 @@ if __name__ == "__main__":
     actor.load_state_dict(state_dict)
     rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
     env.close()
-    print("mean reward:", np.mean(rewards))
+    print("mean reward:", rewards / 100.0)

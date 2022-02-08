@@ -57,7 +57,7 @@ class ReplayBuffer:
 # as far as RL does not have some predefined dataset,
 # we need to specify epoch length by ourselfs
 class ReplayDataset(IterableDataset):
-    def __init__(self, buffer: ReplayBuffer, epoch_size: int = int(1e3)):
+    def __init__(self, buffer: ReplayBuffer, epoch_size: int = 1e3):
         self.buffer = buffer
         self.epoch_size = epoch_size
 
@@ -102,7 +102,7 @@ def generate_session(
     total_reward = 0
     state = env.reset()
 
-    for t in range(t_max):
+    for t in range(t_max):  # noqa: B007
         action = get_action(env, network, state=state, epsilon=epsilon)
         next_state, reward, done, _ = env.step(action)
 
@@ -127,7 +127,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for i_episone in range(num_sessions):
+    for _ in range(int(num_sessions)):
         r, t = generate_session(
             env=env,
             network=network,
@@ -164,8 +164,8 @@ class DiscreteSamplerCallback(ICallback):
         session_period: int,
         epsilon: float,
         epsilon_k: float,
-        num_start_sessions: int = int(1e3),
-        num_valid_sessions: int = int(1e2),
+        num_start_sessions: int = 1e3,
+        num_valid_sessions: int = 1e2,
         prefix: str = "sampler",
     ):
         super().__init__()
@@ -232,8 +232,8 @@ class DiscreteSamplerCallback(ICallback):
         exp.epoch_metrics[self.prefix]["epsilon"] = self.epsilon
         exp.epoch_metrics[self.prefix]["num_sessions"] = self.session_counter
         exp.epoch_metrics[self.prefix]["num_samples"] = self.session_steps
-        exp.epoch_metrics[self.prefix]["updates_per_sample"] = (
-            exp.dataset_sample_step / self.session_steps
+        exp.epoch_metrics[self.prefix]["updates_per_batch"] = (
+            exp.dataset_batch_step / self.session_steps
         )
         exp.epoch_metrics[self.prefix]["valid_reward"] = valid_rewards
         exp.epoch_metrics[self.prefix]["valid_steps"] = valid_steps
@@ -322,7 +322,7 @@ class Experiment(IExperiment):
 
     def on_experiment_start(self, exp: "IExperiment"):
         super().on_experiment_start(exp)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")
         self._setup_data()
         self._setup_model()
         self._setup_callbacks()
@@ -331,9 +331,9 @@ class Experiment(IExperiment):
         super().on_dataset_start(exp)
         self.dataset_metrics["loss"] = list()
 
-    def handle_batch(self, batch: Sequence[np.array]) -> None:
+    def run_batch(self) -> None:
         # model train/valid step
-        states, actions, rewards, dones, next_states = batch
+        states, actions, rewards, dones, next_states = self.batch
 
         # get q-values for all actions in current states
         state_qvalues = self.network(states)
@@ -401,8 +401,14 @@ if __name__ == "__main__":
     ).run()
 
     # evaluate
-    env = gym.wrappers.Monitor(gym.make(env_name), directory="videos_dqn", force=True)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    try:
+        env = gym.wrappers.Monitor(
+            gym.make(env_name), directory="videos_dqn", force=True
+        )
+        env.reset()
+    except Exception:
+        env = gym.make(env_name)
+    device = torch.device("cpu")
     state_dict = torch.load(
         f"{LOGDIR}/network.best.pth", map_location=lambda storage, loc: storage
     )
@@ -410,4 +416,4 @@ if __name__ == "__main__":
     network.load_state_dict(state_dict)
     rewards, _ = generate_sessions(env=env, network=network.eval(), num_sessions=100)
     env.close()
-    print("mean reward:", np.mean(rewards))
+    print("mean reward:", rewards / 100.0)

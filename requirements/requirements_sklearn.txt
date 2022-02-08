@@ -1,0 +1,6 @@
+gym
+numpy
+optuna
+pandas
+pyglet
+scikit-learn

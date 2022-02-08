@@ -21,7 +21,7 @@ def run(experiment):
             for batch in dataset.batches:
                 handle_batch(batch)
 ```
-Each for encapsulated with `on_{for}_start`, `run_{for}`, and `on_{for}_end` for  customisation purposes. Moreover, each for has its own metrics storage: `{for}_metrics` (`batch_metrics`, `dataset_metrics`, `epoch_metrics`, `experiment_metrics`).
+Each `for` encapsulated with `on_{for}_start`, `run_{for}`, and `on_{for}_end` for  customisation purposes. Moreover, each `for` has its own metrics storage: `{for}_metrics` (`batch_metrics`, `dataset_metrics`, `epoch_metrics`, `experiment_metrics`).
 
 </p>
 </details>
@@ -55,7 +55,7 @@ While these steps could seem unimportant in common cases, like supervised learni
 
 
 Thirdly, many high-level frameworks try to divide ML pipeline into data, hardware, model, etc layers, making it easier for practitioners to start ML experiments and giving teams a tool to separate ML pipeline responsibility between different members. However, while it speeds up the creation of ML pipelines, it disregards that ML experiment results are heavily conditioned on the used model hyperparameters, **and data preprocessing/transformations/sampling**, **and hardware setup**.<br/>
-*I found this the main reason why ML experiments fail - you have to focus on the whole data transformation pipeline simultaneously, from raw data through the training process to distributed inference, which is quite hard.*
+*I found this the main reason why ML experiments fail - you have to focus on the whole data transformation pipeline simultaneously, from raw data through the training process to distributed inference, which is quite hard. And that's the reason Animus has Experiment abstraction ([Catalyst](https://github.com/catalyst-team/catalyst) analog - [IRunner](https://github.com/catalyst-team/catalyst/blob/master/catalyst/core/runner.py#L40)), which connects all parts of the experiment: hardware backend, data transformations, model train, and validation/inference logic.*
 
 </p>
 </details>
@@ -65,7 +65,7 @@ Thirdly, many high-level frameworks try to divide ML pipeline into data, hardwar
 <summary>What is Animus' purpose?</summary>
 <p>
 
-Highlight general "breakpoints" in the ML experiments and give a unified interface for them.
+Highlight common "breakpoints" in ML experiments and provide a unified interface for them.
 
 </p>
 </details>
@@ -96,7 +96,14 @@ PyTorch and Keras could be used for extensions.
 <summary>Do you have plans for documentation?</summary>
 <p>
 
-No. Animus core is about 300 lines of code, so it's much easier to just read them all, rather than 3000 lines of documentation.
+No. Animus core is about 300 lines of code, so it's much easier to read than 3000 lines of documentation.
 
 </p>
 </details>
+
+
+#### Demo
+
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/scitator/animus/blob/main/examples/notebooks/colab_ci_cd.ipynb) [Jax/Keras/Sklearn/Torch pipelines](./examples/notebooks/colab_ci_cd.ipynb)
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/scitator/animus/blob/main/examples/notebooks/XLA_jax.ipynb) [Jax XLA example](./examples/notebooks/XLA_jax.ipynb)
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/scitator/animus/blob/main/examples/notebooks/XLA_torch.ipynb) [Torch XLA example](./examples/notebooks/XLA_torch.ipynb)

@@ -1,21 +1,11 @@
 from pprint import pprint
 
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras import layers, Sequential
-from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
 from tqdm.auto import tqdm
 
 from animus import EarlyStoppingCallback, IExperiment
 from animus.keras.callbacks import KerasCheckpointerCallback
-
-
-class CustomCollate:
-    def __call__(self, batch):
-        images = np.vstack([x[0][None] for x in batch])
-        labels = np.vstack([x[1] for x in batch])[:, 0]
-        return images, labels
 
 
 class Experiment(IExperiment):
@@ -24,40 +14,20 @@ class Experiment(IExperiment):
         self.num_epochs = num_epochs
 
     def _setup_data(self):
-        transform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,)),
-                lambda x: np.array(x),
-            ]
+        mnist = tf.keras.datasets.mnist
+        (x_train, y_train), (x_test, y_test) = mnist.load_data()
+        x_train, x_test = x_train / 255.0, x_test / 255.0
+        # Add a channels dimension
+        x_train = x_train[..., tf.newaxis].astype("float32")
+        x_test = x_test[..., tf.newaxis].astype("float32")
+
+        train_ds = (
+            tf.data.Dataset.from_tensor_slices((x_train, y_train))
+            .shuffle(50000)
+            .batch(64)
         )
-        target_transform = lambda y: int(y)
-        train_data = datasets.MNIST(
-            "./data",
-            train=True,
-            download=True,
-            transform=transform,
-            target_transform=target_transform,
-        )
-        valid_data = datasets.MNIST(
-            "./data",
-            train=False,
-            transform=transform,
-            target_transform=target_transform,
-        )
-        kwargs = dict(
-            batch_size=64,
-            num_workers=0,
-            pin_memory=False,
-        )
-        collate_fn = CustomCollate()
-        train_loader = DataLoader(
-            train_data, shuffle=True, collate_fn=collate_fn, **kwargs
-        )
-        valid_loader = DataLoader(
-            valid_data, shuffle=False, collate_fn=collate_fn, **kwargs
-        )
-        self.datasets = {"train": train_loader, "valid": valid_loader}
+        valid_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(64)
+        self.datasets = {"train": train_ds, "valid": valid_ds}
 
     def _setup_model(self):
         self.model = Sequential(
@@ -142,4 +112,4 @@ class Experiment(IExperiment):
 
 
 if __name__ == "__main__":
-    Experiment(num_epochs=50).run()
+    Experiment(num_epochs=15).run()

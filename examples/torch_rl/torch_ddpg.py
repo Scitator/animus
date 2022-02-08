@@ -1,4 +1,4 @@
-from typing import Any, Iterator, Optional, Sequence, Tuple
+from typing import Iterator, Optional, Sequence, Tuple
 from collections import deque, namedtuple
 from pprint import pprint
 
@@ -57,7 +57,7 @@ class ReplayBuffer:
 # as far as RL does not have some predefined dataset,
 # we need to specify epoch length by ourselfs
 class ReplayDataset(IterableDataset):
-    def __init__(self, buffer: ReplayBuffer, epoch_size: int = int(1e3)):
+    def __init__(self, buffer: ReplayBuffer, epoch_size: int = 1e3):
         self.buffer = buffer
         self.epoch_size = epoch_size
 
@@ -120,7 +120,7 @@ def generate_session(
     total_reward = 0
     state = env.reset()
 
-    for t in range(env.spec.max_episode_steps):
+    for t in range(env.spec.max_episode_steps):  # noqa: B007
         action = get_action(env, network, state=state, sigma=sigma)
         next_state, reward, done, _ = env.step(action)
 
@@ -144,7 +144,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for i_episone in range(num_sessions):
+    for _ in range(int(num_sessions)):
         r, t = generate_session(
             env=env, network=network, sigma=sigma, replay_buffer=replay_buffer
         )
@@ -187,8 +187,8 @@ class ContinuousSamplerCallback(ICallback):
         replay_buffer: ReplayBuffer,
         session_period: int,
         sigma: float,
-        num_start_sessions: int = int(1e3),
-        num_valid_sessions: int = int(1e2),
+        num_start_sessions: int = 1e3,
+        num_valid_sessions: int = 1e2,
         prefix: str = "sampler",
     ):
         super().__init__()
@@ -253,8 +253,8 @@ class ContinuousSamplerCallback(ICallback):
         exp.epoch_metrics[self.prefix]["sigma"] = self.sigma
         exp.epoch_metrics[self.prefix]["num_sessions"] = self.session_counter
         exp.epoch_metrics[self.prefix]["num_samples"] = self.session_steps
-        exp.epoch_metrics[self.prefix]["updates_per_sample"] = (
-            exp.dataset_sample_step / self.session_steps
+        exp.epoch_metrics[self.prefix]["updates_per_batch"] = (
+            exp.dataset_batch_step / self.session_steps
         )
         exp.epoch_metrics[self.prefix]["valid_reward"] = valid_rewards
         exp.epoch_metrics[self.prefix]["valid_steps"] = valid_steps
@@ -273,7 +273,7 @@ class Experiment(IExperiment):
         sigma: float = 0.3,
         # general
         num_epochs: int,
-        env_name: str = "Pendulum-v0",
+        env_name: str = "Pendulum-v1",
     ):
         super().__init__()
         self.num_epochs = num_epochs
@@ -351,7 +351,7 @@ class Experiment(IExperiment):
 
     def on_experiment_start(self, exp: "IExperiment"):
         super().on_experiment_start(exp)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")
         self._setup_data()
         self._setup_model()
         self._setup_callbacks()
@@ -361,9 +361,9 @@ class Experiment(IExperiment):
         self.dataset_metrics["critic_loss"] = list()
         self.dataset_metrics["actor_loss"] = list()
 
-    def handle_batch(self, batch: Any) -> None:
+    def run_batch(self) -> None:
         # model train/valid step
-        states, actions, rewards, dones, next_states = batch
+        states, actions, rewards, dones, next_states = self.batch
 
         # get actions for the current state
         pred_actions = self.actor(states)
@@ -429,7 +429,7 @@ if __name__ == "__main__":
     session_period = 1
     sigma = 0.3
     # extras
-    env_name = "Pendulum-v0"
+    env_name = "Pendulum-v1"
 
     # train
     exp = Experiment(
@@ -443,10 +443,14 @@ if __name__ == "__main__":
     ).run()
 
     # evaluate
-    env = gym.wrappers.Monitor(
-        NormalizedActions(gym.make(env_name)), directory="videos_ddpg", force=True
-    )
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    try:
+        env = gym.wrappers.Monitor(
+            NormalizedActions(gym.make(env_name)), directory="videos_ddpg", force=True
+        )
+        env.reset()
+    except Exception:
+        env = NormalizedActions(gym.make(env_name))
+    device = torch.device("cpu")
     state_dict = torch.load(
         f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
     )
@@ -454,4 +458,4 @@ if __name__ == "__main__":
     actor.load_state_dict(state_dict)
     rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
     env.close()
-    print("mean reward:", np.mean(rewards))
+    print("mean reward:", rewards / 100.0)

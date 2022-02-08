@@ -6,6 +6,6 @@ pip install animus numpy torch torchvision tqdm
 python jax_run.py
 
 
-pip install animus haiku numpy optax torch torchvision tqdm
+pip install animus git+https://github.com/deepmind/dm-haiku numpy optax torch torchvision tqdm
 python haiku_run.py
 ```
