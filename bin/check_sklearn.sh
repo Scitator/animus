@@ -4,7 +4,7 @@
 set -eo pipefail -v
 
 # pip install animus
-# pip install gym numpy optuna pyglet scikit-learn
+# pip install gym numpy optuna pandas pyglet scikit-learn
 
 python examples/sklearn/sklearn_cem.py
 python examples/sklearn/sklearn_optuna.py

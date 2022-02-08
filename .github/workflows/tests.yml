@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macOS-10.15]  # windows-2019,
-        python-version: [3.6, 3.7, 3.8]
+        os: [ubuntu-20.04, macOS-10.15]  # windows-2019,
+        python-version: [3.7, 3.8]
         backend: ["jax_dl", "keras_dl", "sklearn", "torch_dl", "torch_rl"]
         # exclude:
         #   # pickle problems

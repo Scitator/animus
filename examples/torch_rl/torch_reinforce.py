@@ -127,7 +127,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for _ in range(num_sessions):
+    for _ in range(int(num_sessions)):
         r, t = generate_session(
             env=env, network=network, t_max=t_max, rollout_buffer=rollout_buffer
         )
