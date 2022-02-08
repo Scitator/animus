@@ -19,7 +19,7 @@ class TorchCheckpointerCallback(ICheckpointerCallback):
         if isinstance(obj, (nn.DataParallel, nn.parallel.DistributedDataParallel)):
             obj = obj.module
         logpath = f"{logprefix}.pth"
-        if isinstance(obj, nn.Module):
+        if issubclass(obj.__class__, torch.nn.Module):
             torch.save(obj.state_dict(), logpath)
         else:
             torch.save(obj, logpath)
@@ -32,7 +32,7 @@ class EngineCheckpointerCallback(ICheckpointerCallback):
 
     def save(self, exp: IExperiment, obj: Any, logprefix: str) -> str:
         logpath = f"{logprefix}.pth"
-        if isinstance(obj, nn.Module):
+        if issubclass(obj.__class__, torch.nn.Module):
             exp.engine.wait_for_everyone()
             obj = exp.engine.unwrap_model(obj)
             exp.engine.save(obj.state_dict(), logpath)

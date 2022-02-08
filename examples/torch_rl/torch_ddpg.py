@@ -447,23 +447,15 @@ if __name__ == "__main__":
         env = gym.wrappers.Monitor(
             NormalizedActions(gym.make(env_name)), directory="videos_ddpg", force=True
         )
-        device = torch.device("cpu")
-        state_dict = torch.load(
-            f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
-        )
-        actor = get_network_actor(env)
-        actor.load_state_dict(state_dict)
-        rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
-        env.close()
-        print("mean reward:", np.mean(rewards))
+        env.reset()
     except Exception:
         env = NormalizedActions(gym.make(env_name))
-        device = torch.device("cpu")
-        state_dict = torch.load(
-            f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
-        )
-        actor = get_network_actor(env)
-        actor.load_state_dict(state_dict)
-        rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
-        env.close()
-        print("mean reward:", np.mean(rewards))
+    device = torch.device("cpu")
+    state_dict = torch.load(
+        f"{LOGDIR}/actor.best.pth", map_location=lambda storage, loc: storage
+    )
+    actor = get_network_actor(env)
+    actor.load_state_dict(state_dict)
+    rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
+    env.close()
+    print("mean reward:", np.mean(rewards))

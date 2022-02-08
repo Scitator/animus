@@ -97,7 +97,7 @@ class ICheckpointerCallback(ABC, ICallback):
 
     def _handle_epoch(self, exp: IExperiment, score: float):
         obj = exp.__dict__[self._exp_attr]
-        logprefix = f"{self.logdir}/{self._exp_attr}.{exp.epoch_step:03d}"
+        logprefix = f"{self.logdir}/{self._exp_attr}.{exp.epoch_step:04d}"
         logpath = self.save(exp, obj, logprefix)
         self._storage.append(Checkpoint(obj=obj, logpath=logpath, metric=score))
         self._storage = sorted(
