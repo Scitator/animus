@@ -16,7 +16,7 @@ def generate_session(env, agent, t_max=1000):
     total_reward = 0
 
     s = env.reset()
-    for t in range(t_max):
+    for _ in range(t_max):
         # predict array of action probabilities
         probs = agent.predict_proba([s])[0]
         # sample action with such probabilities
@@ -130,7 +130,7 @@ class Experiment(IExperiment):
         )
         try:
             self.agent.partial_fit(elite_states, elite_actions)
-        except:
+        except Exception:
             # hack
             addition = np.array([self.env.reset()] * self.n_actions)
             elite_states = np.vstack((elite_states, addition))
@@ -171,7 +171,7 @@ if __name__ == "__main__":
         env.close()
         _, _, rewards = map(np.array, zip(*sessions))
         print("mean reward:", np.mean(rewards))
-    except:
+    except Exception:
         env = gym.make(env_name)
         with open(f"{LOGDIR}/agent.best.pkl", "rb") as fin:
             agent = pickle.load(fin)

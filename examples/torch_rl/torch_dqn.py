@@ -57,7 +57,7 @@ class ReplayBuffer:
 # as far as RL does not have some predefined dataset,
 # we need to specify epoch length by ourselfs
 class ReplayDataset(IterableDataset):
-    def __init__(self, buffer: ReplayBuffer, epoch_size: int = int(1e3)):
+    def __init__(self, buffer: ReplayBuffer, epoch_size: int = 1e3):
         self.buffer = buffer
         self.epoch_size = epoch_size
 
@@ -102,7 +102,7 @@ def generate_session(
     total_reward = 0
     state = env.reset()
 
-    for t in range(t_max):
+    for t in range(t_max):  # noqa: B007
         action = get_action(env, network, state=state, epsilon=epsilon)
         next_state, reward, done, _ = env.step(action)
 
@@ -127,7 +127,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for i_episone in range(num_sessions):
+    for _ in range(num_sessions):
         r, t = generate_session(
             env=env,
             network=network,
@@ -164,8 +164,8 @@ class DiscreteSamplerCallback(ICallback):
         session_period: int,
         epsilon: float,
         epsilon_k: float,
-        num_start_sessions: int = int(1e3),
-        num_valid_sessions: int = int(1e2),
+        num_start_sessions: int = 1e3,
+        num_valid_sessions: int = 1e2,
         prefix: str = "sampler",
     ):
         super().__init__()
@@ -414,7 +414,7 @@ if __name__ == "__main__":
         rewards, _ = generate_sessions(env=env, network=network.eval(), num_sessions=100)
         env.close()
         print("mean reward:", np.mean(rewards))
-    except:
+    except Exception:
         env = gym.make(env_name)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         state_dict = torch.load(

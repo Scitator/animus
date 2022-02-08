@@ -100,7 +100,7 @@ def generate_session(
     states, actions, rewards = [], [], []
     state = env.reset()
 
-    for t in range(t_max):
+    for _ in range(t_max):
         action = get_action(env, network, state=state)
         next_state, reward, done, _ = env.step(action)
 
@@ -116,7 +116,7 @@ def generate_session(
     if rollout_buffer is not None:
         rollout_buffer.append(Rollout(states, actions, rewards))
 
-    return total_reward, t
+    return total_reward, len(states)
 
 
 def generate_sessions(
@@ -127,7 +127,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for i_episone in range(num_sessions):
+    for _ in range(num_sessions):
         r, t = generate_session(
             env=env, network=network, t_max=t_max, rollout_buffer=rollout_buffer
         )
@@ -157,8 +157,8 @@ class SoftmaxSamplerCallback(ICallback):
         actor_attr: str,
         env,
         rollout_buffer: RolloutBuffer,
-        num_train_sessions: int = int(1e2),
-        num_valid_sessions: int = int(1e2),
+        num_train_sessions: int = 1e2,
+        num_valid_sessions: int = 1e2,
         prefix: str = "sampler",
     ):
         super().__init__()
@@ -333,7 +333,7 @@ if __name__ == "__main__":
         rewards, _ = generate_sessions(env=env, network=actor.eval(), num_sessions=100)
         env.close()
         print("mean reward:", np.mean(rewards))
-    except:
+    except Exception:
         env = gym.make(env_name)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         state_dict = torch.load(

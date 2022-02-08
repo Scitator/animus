@@ -1,0 +1,7 @@
+jax[cpu]
+haiku
+numpy
+optax
+torch
+torchvision
+tqdm
