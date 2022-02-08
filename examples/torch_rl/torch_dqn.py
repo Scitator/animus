@@ -416,4 +416,4 @@ if __name__ == "__main__":
     network.load_state_dict(state_dict)
     rewards, _ = generate_sessions(env=env, network=network.eval(), num_sessions=100)
     env.close()
-    print("mean reward:", np.mean(rewards))
+    print("mean reward:", rewards / 100.0)

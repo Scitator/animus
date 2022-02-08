@@ -26,8 +26,9 @@ setup(
     python_requires=REQUIRES_PYTHON,
     packages=find_packages(
         exclude=(
-            "tests",
+            "bin",
             "examples",
+            "tests",
         )
     ),
     install_requires=[],
