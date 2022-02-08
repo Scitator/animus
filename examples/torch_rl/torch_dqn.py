@@ -127,7 +127,7 @@ def generate_sessions(
     num_sessions: int = 100,
 ) -> Tuple[float, int]:
     sessions_reward, sessions_steps = 0, 0
-    for _ in range(int(num_sessions)):
+    for _ in range(num_sessions):
         r, t = generate_session(
             env=env,
             network=network,
@@ -322,7 +322,7 @@ class Experiment(IExperiment):
 
     def on_experiment_start(self, exp: "IExperiment"):
         super().on_experiment_start(exp)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cpu")
         self._setup_data()
         self._setup_model()
         self._setup_callbacks()
@@ -405,7 +405,7 @@ if __name__ == "__main__":
         env = gym.wrappers.Monitor(
             gym.make(env_name), directory="videos_dqn", force=True
         )
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cpu")
         state_dict = torch.load(
             f"{LOGDIR}/network.best.pth", map_location=lambda storage, loc: storage
         )
@@ -416,7 +416,7 @@ if __name__ == "__main__":
         print("mean reward:", np.mean(rewards))
     except Exception:
         env = gym.make(env_name)
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cpu")
         state_dict = torch.load(
             f"{LOGDIR}/network.best.pth", map_location=lambda storage, loc: storage
         )

@@ -1,5 +1,5 @@
 jax[cpu]
-haiku
+git+https://github.com/deepmind/dm-haiku
 numpy
 optax
 torch
