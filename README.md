@@ -100,3 +100,10 @@ No. Animus core is about 300 lines of code, so it's much easier to just read the
 
 </p>
 </details>
+
+
+#### Demo
+
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/scitator/animus/blob/main/examples/notebooks/colab_ci_cd.ipynb) [Jax/Keras/Sklearn/Torch pipelines](./examples/notebooks/colab_ci_cd.ipynb)
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/scitator/animus/blob/main/examples/notebooks/XLA_jax.ipynb) [Jax XLA example](./examples/notebooks/XLA_jax.ipynb)
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/scitator/animus/blob/main/examples/notebooks/XLA_torch.ipynb) [Torch XLA example](./examples/notebooks/XLA_torch.ipynb)
