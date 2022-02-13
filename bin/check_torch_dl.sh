@@ -22,11 +22,14 @@ except ImportError:
 
 if [[ $CUDA -ne 0 ]]; then
     python examples/torch_dl/torch_run.py --engine="gpu"
+    python examples/torch_dl/torch_run.py --engine="gpu" --fp16
 fi
 
 if [[ $CUDA -ne 0 ]] && [[ $NGPU -ne 0 ]]; then
     python examples/torch_dl/torch_run.py --engine="dp"
+    python examples/torch_dl/torch_run.py --engine="dp" --fp16
     python examples/torch_dl/torch_run.py --engine="ddp"
+    python examples/torch_dl/torch_run.py --engine="ddp" --fp16
 fi
 
 if [[ $TXLA -ne 0 ]]; then
