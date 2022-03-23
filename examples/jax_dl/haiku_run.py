@@ -121,11 +121,7 @@ class Experiment(IExperiment):
             transform=transform,
             target_transform=target_transform,
         )
-        kwargs = dict(
-            batch_size=self.batch_size,
-            num_workers=0,
-            pin_memory=False,
-        )
+        kwargs = dict(batch_size=self.batch_size, num_workers=0, pin_memory=False,)
         collate_fn = CustomCollate(len(jax.devices()))
         train_loader = DataLoader(
             train_data, shuffle=True, collate_fn=collate_fn, **kwargs

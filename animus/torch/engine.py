@@ -100,12 +100,7 @@ class DDPEngine(Engine):
 
     def spawn(self, fn: Callable, *args, **kwargs):
         world_size: int = self._world_size or torch.cuda.device_count()
-        return mp.spawn(
-            fn,
-            args=(world_size,),
-            nprocs=world_size,
-            join=True,
-        )
+        return mp.spawn(fn, args=(world_size,), nprocs=world_size, join=True,)
 
     def setup(self, local_rank: int, world_size: int):
         process_group_kwargs = {
@@ -127,8 +122,7 @@ class DDPEngine(Engine):
     def mean_reduce_ddp_metrics(self, metrics: Dict) -> Dict:
         metrics = {
             k: _ddp_mean_reduce(
-                torch.tensor(v, device=self.device),
-                world_size=self.state.num_processes,
+                torch.tensor(v, device=self.device), world_size=self.state.num_processes,
             )
             for k, v in metrics.items()
         }

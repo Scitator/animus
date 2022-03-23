@@ -10,6 +10,7 @@ set -eo pipefail -v
 # pip install git+https://github.com/deepmind/dm-haiku numpy optax torch torchvision tqdm
 
 CUDA_VISIBLE_DEVICES="" python examples/jax_dl/jax_run.py
+CUDA_VISIBLE_DEVICES="" python examples/jax_dl/flax_run.py
 CUDA_VISIBLE_DEVICES="" python examples/jax_dl/haiku_run.py
 
 export CUDA=$(python -c "import torch; print(int(torch.cuda.is_available()))")
@@ -17,10 +18,12 @@ export NGPU=$(python -c "import torch; print(int(torch.cuda.device_count() >= 2)
 
 if [[ $CUDA -ne 0 ]]; then
     CUDA_VISIBLE_DEVICES="0" python examples/jax_dl/jax_run.py
+    CUDA_VISIBLE_DEVICES="0" python examples/jax_dl/flax_run.py
     CUDA_VISIBLE_DEVICES="0" python examples/jax_dl/haiku_run.py
 fi
 
 if [[ $CUDA -ne 0 ]] && [[ $NGPU -ne 0 ]]; then
     CUDA_VISIBLE_DEVICES="0,1" python examples/jax_dl/jax_run.py
+    CUDA_VISIBLE_DEVICES="0,1" python examples/jax_dl/flax_run.py
     CUDA_VISIBLE_DEVICES="0,1" python examples/jax_dl/haiku_run.py
 fi

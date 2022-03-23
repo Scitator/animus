@@ -11,11 +11,7 @@ from animus import IExperiment
 from animus.torch.callbacks import TorchCheckpointerCallback
 
 HPARAMS = dict(
-    num_hidden1=16,
-    num_hidden2=16,
-    learning_rate=0.02,
-    batch_size=100,
-    num_epochs=5,
+    num_hidden1=16, num_hidden2=16, learning_rate=0.02, batch_size=100, num_epochs=5,
 )
 
 

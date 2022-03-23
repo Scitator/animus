@@ -24,19 +24,10 @@ setup(
     long_description=open(os.path.join(here, "README.md")).read(),
     long_description_content_type="text/markdown",
     python_requires=REQUIRES_PYTHON,
-    packages=find_packages(
-        exclude=(
-            "bin",
-            "examples",
-            "tests",
-        )
-    ),
+    packages=find_packages(exclude=("bin", "examples", "tests",)),
     install_requires=[],
     include_package_data=True,
-    keywords=[
-        "Machine Learning",
-        "Deep Learning",
-    ],
+    keywords=["Machine Learning", "Deep Learning",],
     classifiers=[
         "Natural Language :: English",
         "Development Status :: 4 - Beta",

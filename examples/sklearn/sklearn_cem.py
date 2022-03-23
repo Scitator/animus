@@ -110,10 +110,7 @@ class Experiment(IExperiment):
                     minimize=False, patience=5, metric_key="reward", min_delta=1.0
                 ),
                 "checkpointer": PickleCheckpointerCallback(
-                    exp_attr="agent",
-                    logdir=LOGDIR,
-                    metric_key="reward",
-                    minimize=False,
+                    exp_attr="agent", logdir=LOGDIR, metric_key="reward", minimize=False,
                 ),
             }
 
