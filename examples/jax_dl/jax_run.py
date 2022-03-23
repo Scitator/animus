@@ -153,7 +153,10 @@ class Experiment(IExperiment):
     def _setup_callbacks(self):
         self.callbacks = {
             "early-stop": EarlyStoppingCallback(
-                minimize=False, patience=5, metric_key="valid_accuracy", min_delta=0.01,
+                minimize=False,
+                patience=5,
+                metric_key="valid_accuracy",
+                min_delta=0.01,
             ),
             "checkpointer": PickleCheckpointerCallback(
                 exp_attr="params",

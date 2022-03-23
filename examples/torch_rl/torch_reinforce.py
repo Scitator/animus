@@ -246,7 +246,9 @@ class Experiment(IExperiment):
         # to boost agent exploration
         self.callbacks = {
             "sampler": SoftmaxSamplerCallback(
-                actor_attr="model", env=self.env, rollout_buffer=self.rollout_buffer,
+                actor_attr="model",
+                env=self.env,
+                rollout_buffer=self.rollout_buffer,
             ),
             "checkpointer": TorchCheckpointerCallback(
                 exp_attr="model",
@@ -312,7 +314,11 @@ if __name__ == "__main__":
     # extras
     env_name = "CartPole-v1"
 
-    exp = Experiment(num_epochs=30, gamma=gamma, env_name=env_name,).run()
+    exp = Experiment(
+        num_epochs=30,
+        gamma=gamma,
+        env_name=env_name,
+    ).run()
 
     try:
         env = gym.wrappers.Monitor(
