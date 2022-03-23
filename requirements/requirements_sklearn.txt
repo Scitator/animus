@@ -2,5 +2,6 @@ gym
 numpy
 optuna
 pandas
+pygame
 pyglet
 scikit-learn
