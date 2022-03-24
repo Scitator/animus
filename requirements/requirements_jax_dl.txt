@@ -1,4 +1,5 @@
 jax[cpu]
+flax
 git+https://github.com/deepmind/dm-haiku
 numpy
 optax
