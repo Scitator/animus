@@ -46,7 +46,7 @@ if __name__ == "__main__":
         help="store output as gif with the given filename",
     )
     parser.add_argument(
-        "--episodes", type=int, default=1000000, help="number of episodes to visualize"
+        "--episodes", type=int, default=10, help="number of episodes to visualize"
     )
     parser.add_argument(
         "--recurrent", action="store_true", default=False, help="add a LSTM to the model"

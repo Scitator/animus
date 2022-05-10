@@ -1,3 +1,4 @@
+import argparse
 import time
 
 import gym
@@ -10,7 +11,7 @@ from animus.torch.callbacks import TorchCheckpointerCallback
 from src.acmodel import ACModel
 from src.settings import LOGDIR
 from src.trainer import A2CTrainer, PPOTrainer
-from src.utils import synthesize
+from src.utils import get_txt_logger, synthesize
 
 TRAINERS = {
     "a2c": A2CTrainer,
@@ -112,10 +113,25 @@ class Experiment(IExperiment):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--env", required=True, help="name of the environment to be run (REQUIRED)"
+    )
+    parser.add_argument(
+        "--procs", type=int, default=16, help="number of processes (default: 16)"
+    )
+    parser.add_argument(
+        "--steps",
+        type=int,
+        default=int(1e6),
+        help="number of frames of training (default: 1e6)",
+    )
+    args = parser.parse_args()
+
     exp = Experiment(
-        num_steps=int(1e6),
-        num_envs=16,
-        env_name="LunarLander-v2",  # "CartPole-v1",
+        num_steps=args.steps,
+        num_envs=args.procs,
+        env_name=args.env,
         recurrent=False,
         alg_name="ppo",
         # ppo
