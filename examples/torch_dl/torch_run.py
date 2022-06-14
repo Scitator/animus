@@ -96,8 +96,8 @@ class Experiment(IExperiment):
                 output = self.model(data)
                 loss = self.criterion(output, target)
                 pred = output.argmax(dim=1, keepdim=True)
-                total_loss += loss.sum().item()
-                total_accuracy += pred.eq(target.view_as(pred)).sum().item()
+                total_loss += loss.sum().detach()
+                total_accuracy += pred.eq(target.view_as(pred)).sum().detach()
                 if self.is_train_dataset:
                     self.engine.backward(loss)
                     self.optimizer.step()
@@ -105,7 +105,7 @@ class Experiment(IExperiment):
         total_loss /= self.dataset_batch_step
         total_accuracy /= self.dataset_batch_step * self.batch_size
         self.dataset_metrics = {"loss": total_loss, "accuracy": total_accuracy}
-        self.dataset_metrics = self.engine.reduce(self.dataset_metrics, reduction="mean")
+        self.engine.reduce(self.dataset_metrics, reduction="mean")
         self.dataset_metrics = {k: float(v) for k, v in self.dataset_metrics.items()}
 
     def on_epoch_end(self, exp: "IExperiment") -> None:
