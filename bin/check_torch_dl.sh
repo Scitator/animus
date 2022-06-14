@@ -4,7 +4,7 @@
 set -eo pipefail -v
 
 # pip install animus
-# pip install accelerate packaging torch torchvision tqdm
+# pip install accelerate>=0.7.0 packaging torch torchvision tqdm
 
 python examples/torch_dl/torch_run.py --engine="cpu"
 
