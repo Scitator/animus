@@ -14,7 +14,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 
 setup(
     name=NAME,
-    version="0.0.2",
+    version="0.0.3",
     url=URL,
     download_url=URL,
     description=DESCRIPTION,

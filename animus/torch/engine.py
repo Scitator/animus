@@ -5,8 +5,6 @@ from typing import Any, Callable, Dict, Optional, Union
 import os
 
 from accelerate import Accelerator
-from accelerate.state import DistributedType
-import numpy as np
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
@@ -14,19 +12,7 @@ import torch.multiprocessing as mp
 from animus.torch import IS_TORCH_XLA_AVAILABLE
 
 if IS_TORCH_XLA_AVAILABLE:
-    import torch_xla.core.xla_model as xm
     import torch_xla.distributed.xla_multiprocessing as xmp
-
-
-def _ddp_sum_reduce(tensor: torch.Tensor) -> torch.Tensor:
-    cloned = tensor.clone()
-    dist.all_reduce(cloned, dist.ReduceOp.SUM)
-    return cloned
-
-
-def _ddp_mean_reduce(tensor: torch.Tensor, world_size: int) -> torch.Tensor:
-    reduced = _ddp_sum_reduce(tensor) / world_size
-    return reduced
 
 
 class Engine(Accelerator):
@@ -38,27 +24,6 @@ class Engine(Accelerator):
 
     def cleanup(self):
         pass
-
-    def mean_reduce_ddp_metrics(self, metrics: Dict) -> Dict:
-        if self.state.distributed_type in [
-            DistributedType.MULTI_CPU,
-            DistributedType.MULTI_GPU,
-        ]:
-            metrics = {
-                k: _ddp_mean_reduce(
-                    torch.tensor(v, device=self.device),
-                    world_size=self.state.num_processes,
-                )
-                for k, v in metrics.items()
-            }
-        elif self.state.distributed_type == DistributedType.TPU:
-            metrics = {
-                k: xm.mesh_reduce(
-                    k, v.item() if isinstance(v, torch.Tensor) else v, np.mean
-                )
-                for k, v in metrics.items()
-            }
-        return metrics
 
 
 class CPUEngine(Engine):
@@ -124,16 +89,6 @@ class DDPEngine(Engine):
     def cleanup(self):
         dist.destroy_process_group()
 
-    def mean_reduce_ddp_metrics(self, metrics: Dict) -> Dict:
-        metrics = {
-            k: _ddp_mean_reduce(
-                torch.tensor(v, device=self.device),
-                world_size=self.state.num_processes,
-            )
-            for k, v in metrics.items()
-        }
-        return metrics
-
 
 class XLAEngine(Engine):
     def __init__(self, *args, **kwargs):
@@ -146,13 +101,6 @@ class XLAEngine(Engine):
 
     def setup(self, local_rank: int, world_size: int):
         super().__init__(self, *self._args, **self._kwargs)
-
-    def mean_reduce_ddp_metrics(self, metrics: Dict) -> Dict:
-        metrics = {
-            k: xm.mesh_reduce(k, v.item() if isinstance(v, torch.Tensor) else v, np.mean)
-            for k, v in metrics.items()
-        }
-        return metrics
 
 
 __all__ = [Engine, CPUEngine, GPUEngine, DPEngine, DDPEngine, XLAEngine]

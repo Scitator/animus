@@ -105,7 +105,7 @@ class Experiment(IExperiment):
         total_loss /= self.dataset_batch_step
         total_accuracy /= self.dataset_batch_step * self.batch_size
         self.dataset_metrics = {"loss": total_loss, "accuracy": total_accuracy}
-        self.dataset_metrics = self.engine.mean_reduce_ddp_metrics(self.dataset_metrics)
+        self.dataset_metrics = self.engine.reduce(self.dataset_metrics, reduction="mean")
         self.dataset_metrics = {k: float(v) for k, v in self.dataset_metrics.items()}
 
     def on_epoch_end(self, exp: "IExperiment") -> None:
